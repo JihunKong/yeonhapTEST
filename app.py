@@ -196,9 +196,19 @@ try:
                     (answers_df['과목'] == subject)
                 ]
                 
+                # 기본 배점 설정
+                default_point = st.number_input(
+                    "기본 배점을 입력하세요 (소수점 첫째자리까지)",
+                    min_value=0.0,
+                    max_value=5.0,
+                    value=2.0,
+                    step=0.1,
+                    format="%.1f"
+                )
+                
                 # 정답 입력 폼
                 with st.form("answer_form"):
-                    st.write("문항별 정답과 배점을 입력하세요")
+                    st.write("문항별 정답과 배점을 입력하세요 (기본 배점과 다른 경우에만 수정)")
                     answers = {}
                     points = {}  # 배점 저장용 딕셔너리
                     
@@ -209,9 +219,16 @@ try:
                             existing_answer = existing_answers[existing_answers['문항번호'] == i]['정답'].iloc[0] if not existing_answers.empty else ""
                             answers[i] = st.text_input(f"{i}번", value=existing_answer)
                         with col2:
-                            # 기존 배점이 있으면 표시
-                            existing_point = existing_answers[existing_answers['문항번호'] == i]['배점'].iloc[0] if not existing_answers.empty else 2
-                            points[i] = st.number_input(f"{i}번 배점", min_value=1, max_value=5, value=int(existing_point))
+                            # 기존 배점이 있으면 표시, 없으면 기본 배점 사용
+                            existing_point = existing_answers[existing_answers['문항번호'] == i]['배점'].iloc[0] if not existing_answers.empty else default_point
+                            points[i] = st.number_input(
+                                f"{i}번 배점",
+                                min_value=0.0,
+                                max_value=5.0,
+                                value=float(existing_point),
+                                step=0.1,
+                                format="%.1f"
+                            )
                     
                     submitted = st.form_submit_button("정답 저장")
                     
