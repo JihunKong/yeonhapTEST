@@ -541,13 +541,14 @@ try:
                 
                 # 답안 입력 폼
                 with st.form("student_answer_form"):
+                    answers = []
                     for i in range(num_questions):
                         col1, col2 = st.columns([3, 1])
                         with col1:
                             st.write(f"{i+1}번")
                         with col2:
                             answer = st.text_input(f"답", key=f"student_q_{i}")
-                            answers.append(answer)
+                            answers.append(answer if answer else "")  # 빈 값 처리
                     
                     submitted = st.form_submit_button("답안 제출")
                     
@@ -562,14 +563,15 @@ try:
                         
                         # 새 답안 추가
                         for i, answer in enumerate(answers):
-                            new_row = {
-                                '학생ID': username,
-                                '회차': exam_round,
-                                '과목': subject,
-                                '문항번호': i+1,
-                                '입력답': answer
-                            }
-                            responses_df = pd.concat([responses_df, pd.DataFrame([new_row])], ignore_index=True)
+                            if answer:  # 답안이 있는 경우만 저장
+                                new_row = {
+                                    '학생ID': username,
+                                    '회차': exam_round,
+                                    '과목': subject,
+                                    '문항번호': i+1,
+                                    '입력답': answer
+                                }
+                                responses_df = pd.concat([responses_df, pd.DataFrame([new_row])], ignore_index=True)
                         responses_df.to_csv(RESPONSES_FILE, index=False)
                         st.success("답안이 저장되었습니다!")
                         
