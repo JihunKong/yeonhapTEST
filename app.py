@@ -7,6 +7,7 @@ import streamlit_authenticator as stauth
 from dotenv import load_dotenv
 import yaml
 from yaml.loader import SafeLoader
+import bcrypt
 
 # 환경 변수 로드
 load_dotenv()
@@ -18,9 +19,38 @@ st.set_page_config(
     layout="wide"
 )
 
+# 데이터 디렉토리 생성
+if not os.path.exists('data'):
+    os.makedirs('data')
+
 # 인증 설정
-with open('config.yaml') as file:
-    config = yaml.load(file, Loader=SafeLoader)
+def load_config():
+    if os.path.exists('config.yaml'):
+        with open('config.yaml') as file:
+            return yaml.load(file, Loader=SafeLoader)
+    return {
+        'credentials': {
+            'usernames': {
+                'admin': {
+                    'email': 'admin@example.com',
+                    'name': '관리자',
+                    'password': 'admin123'
+                }
+            }
+        },
+        'cookie': {
+            'expiry_days': 30,
+            'key': 'yeonhap_test_key_123',
+            'name': 'yeonhap_test_cookie'
+        }
+    }
+
+config = load_config()
+
+# 설정 파일 저장
+def save_config():
+    with open('config.yaml', 'w') as file:
+        yaml.dump(config, file, allow_unicode=True)
 
 authenticator = stauth.Authenticate(
     config['credentials'],
@@ -76,7 +106,51 @@ try:
         initialize_data_files()
         
         # 메인 컨텐츠
-        if username == 'teacher':
+        if username == 'admin':
+            st.header("관리자 설정")
+            
+            # 탭 생성
+            tab1, tab2 = st.tabs(["계정 관리", "시스템 설정"])
+            
+            with tab1:
+                st.subheader("계정 추가")
+                new_username = st.text_input("아이디")
+                new_name = st.text_input("이름")
+                new_email = st.text_input("이메일")
+                new_password = st.text_input("비밀번호", type="password")
+                account_type = st.selectbox("계정 유형", ["교사", "학생"])
+                
+                if st.button("계정 추가"):
+                    if new_username and new_name and new_email and new_password:
+                        if new_username not in config['credentials']['usernames']:
+                            config['credentials']['usernames'][new_username] = {
+                                'email': new_email,
+                                'name': new_name,
+                                'password': new_password
+                            }
+                            save_config()
+                            st.success("계정이 추가되었습니다!")
+                        else:
+                            st.error("이미 존재하는 아이디입니다.")
+                    else:
+                        st.error("모든 필드를 입력해주세요.")
+                
+                st.subheader("계정 목록")
+                accounts_df = pd.DataFrame([
+                    {
+                        '아이디': username,
+                        '이름': info['name'],
+                        '이메일': info['email']
+                    }
+                    for username, info in config['credentials']['usernames'].items()
+                ])
+                st.dataframe(accounts_df)
+            
+            with tab2:
+                st.subheader("시스템 설정")
+                st.write("추가 설정 옵션은 여기에 구현될 예정입니다.")
+        
+        elif username == 'teacher':
             st.header("교사용 관리")
             
             # 탭 생성

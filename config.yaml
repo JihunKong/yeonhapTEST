@@ -12,6 +12,10 @@ credentials:
       email: student2@example.com
       name: 학생2
       password: student123
+    admin:
+      email: admin@example.com
+      name: 관리자
+      password: admin123
 
 cookie:
   expiry_days: 30
