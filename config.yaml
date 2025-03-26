@@ -84,7 +84,7 @@ credentials:
       email: student19@example.com
       name: 김시온
       password: student123
-    student18:
+    student20:
       email: student20@example.com
       name: 박수민
       password: student123      
