@@ -26,8 +26,7 @@ authenticator = stauth.Authenticate(
     config['credentials'],
     config['cookie']['name'],
     config['cookie']['key'],
-    config['cookie']['expiry_days'],
-    config['preauthorized']
+    config['cookie']['expiry_days']
 )
 
 # 세션 상태 초기화
@@ -40,20 +39,10 @@ if 'username' not in st.session_state:
 
 # 인증
 try:
-    if not st.session_state["authentication_status"]:
-        authenticator.login(fields=['username', 'password'])
+    name, authentication_status, username = authenticator.login('로그인', 'main')
     
-    if st.session_state["authentication_status"]:
-        name = st.session_state["name"]
-        username = st.session_state["username"]
-        
-        # 디버깅 정보
-        st.write("=== 디버깅 정보 ===")
-        st.write(f"로그인 상태: {st.session_state['authentication_status']}")
-        st.write(f"사용자 이름: {name}")
-        st.write(f"아이디: {username}")
-        st.write(f"인증된 사용자 목록: {config['preauthorized']}")
-        st.write("==================")
+    if authentication_status:
+        st.success(f"환영합니다 {name}님!")
         
         # 사이드바
         authenticator.logout('로그아웃', 'sidebar')
@@ -334,9 +323,10 @@ try:
                         st.metric("틀린 개수", num_questions - correct_count)
                     with col3:
                         st.metric("정답률", f"{(correct_count/num_questions)*100:.1f}%")
-    else:
+    elif authentication_status == False:
         st.error('아이디/비밀번호가 잘못되었습니다.')
-        st.stop()
+    elif authentication_status == None:
+        st.warning('아이디와 비밀번호를 입력하세요.')
 except Exception as e:
     st.error(f'로그인 중 오류가 발생했습니다: {str(e)}')
     st.stop() 

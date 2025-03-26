@@ -3,15 +3,15 @@ credentials:
     teacher:
       email: teacher@example.com
       name: 교사
-      password: $2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj1ZxQQxq3re
+      password: teacher123
     student1:
       email: student1@example.com
       name: 학생1
-      password: $2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj1ZxQQxq3re
+      password: student123
     student2:
       email: student2@example.com
       name: 학생2
-      password: $2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj1ZxQQxq3re
+      password: student123
 
 cookie:
   expiry_days: 30
