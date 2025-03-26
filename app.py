@@ -570,20 +570,33 @@ try:
                 
                 # 답안 입력 폼
                 with st.form("student_answer_form"):
+                    # 기존 답안 불러오기
+                    responses_df = pd.read_csv(RESPONSES_FILE)
+                    existing_responses = responses_df[
+                        (responses_df['학생ID'] == username) & 
+                        (responses_df['회차'] == exam_round) & 
+                        (responses_df['과목'] == subject)
+                    ]
+                    
                     answers = []
                     for i in range(num_questions):
                         col1, col2 = st.columns([3, 1])
                         with col1:
                             st.write(f"{i+1}번")
                         with col2:
-                            answer = st.text_input(f"답", key=f"student_q_{i}")
+                            # 기존 답안이 있으면 표시
+                            existing_answer = ""
+                            if not existing_responses.empty:
+                                answer_row = existing_responses[existing_responses['문항번호'] == i+1]
+                                if not answer_row.empty:
+                                    existing_answer = answer_row['입력답'].iloc[0]
+                            answer = st.text_input(f"답", value=existing_answer, key=f"student_q_{i}")
                             answers.append(answer if answer else "")  # 빈 값 처리
                     
                     submitted = st.form_submit_button("답안 제출")
                     
                     if submitted:
                         # 기존 답안 삭제
-                        responses_df = pd.read_csv(RESPONSES_FILE)
                         responses_df = responses_df[
                             ~((responses_df['학생ID'] == username) & 
                               (responses_df['회차'] == exam_round) & 
