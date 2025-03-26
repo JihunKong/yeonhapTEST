@@ -605,23 +605,28 @@ try:
                             
                             if not filtered_answers.empty:
                                 correct_count = 0
+                                total_answered = 0  # 실제로 답한 문항 수
                                 for i, answer in enumerate(answers):
                                     if answer:  # 답안이 있는 경우만 채점
+                                        total_answered += 1
                                         correct_answer = filtered_answers[
                                             filtered_answers['문항번호'] == i+1
                                         ]['정답'].iloc[0]
                                         
                                         if str(answer).strip() == str(correct_answer).strip():  # 문자열로 변환하고 공백 제거
                                             correct_count += 1
-                            
-                                st.subheader("채점 결과")
-                                col1, col2, col3 = st.columns(3)
-                                with col1:
-                                    st.metric("맞은 개수", correct_count)
-                                with col2:
-                                    st.metric("틀린 개수", num_questions - correct_count)
-                                with col3:
-                                    st.metric("정답률", f"{(correct_count/num_questions)*100:.1f}%")
+                                
+                                if total_answered > 0:  # 답안을 하나라도 입력한 경우에만 결과 표시
+                                    st.subheader("채점 결과")
+                                    col1, col2, col3 = st.columns(3)
+                                    with col1:
+                                        st.metric("맞은 개수", correct_count)
+                                    with col2:
+                                        st.metric("틀린 개수", total_answered - correct_count)
+                                    with col3:
+                                        st.metric("정답률", f"{(correct_count/total_answered)*100:.1f}%")
+                                else:
+                                    st.warning("답안을 입력해주세요.")
                             else:
                                 st.warning("해당 회차/과목의 정답이 아직 등록되지 않았습니다.")
     elif authentication_status == False:
