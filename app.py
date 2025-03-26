@@ -39,7 +39,7 @@ if 'username' not in st.session_state:
 
 # 인증
 try:
-    name, authentication_status, username = authenticator.login('로그인', 'main')
+    name, authentication_status, username = authenticator.login(fields=['username', 'password'])
     
     if authentication_status:
         st.success(f"환영합니다 {name}님!")
