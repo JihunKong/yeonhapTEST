@@ -264,6 +264,12 @@ try:
                     submitted = st.form_submit_button("정답 저장")
                     
                     if submitted:
+                        # 배점 총합 계산
+                        total_points = sum(points.values())
+                        if abs(total_points - 100) > 0.1:  # 부동소수점 오차 고려
+                            st.error(f"배점의 총합이 100점이 되어야 합니다. (현재: {total_points:.1f}점)")
+                            st.stop()
+                        
                         # 기존 정답 삭제
                         answers_df = answers_df[
                             ~((answers_df['회차'] == exam_round) & 
@@ -282,7 +288,7 @@ try:
                             answers_df = pd.concat([answers_df, pd.DataFrame([new_row])], ignore_index=True)
                         
                         answers_df.to_csv(ANSWERS_FILE, index=False)
-                        st.success("정답이 저장되었습니다!")
+                        st.success(f"정답이 저장되었습니다! (총점: {total_points:.1f}점)")
             
             with tab2:
                 # 채점 결과 확인
