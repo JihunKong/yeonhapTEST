@@ -527,65 +527,68 @@ try:
                 num_questions = len(filtered_answers)
                 answers = []
                 
-                for i in range(num_questions):
-                    col1, col2 = st.columns([3, 1])
-                    with col1:
-                        st.write(f"{i+1}번")
-                    with col2:
-                        answer = st.text_input(f"답", key=f"student_q_{i}")
-                        answers.append(answer)
-                
-                if st.button("제출", key='student_submit'):
-                    # 답안 저장
-                    responses_df = pd.read_csv(RESPONSES_FILE)
-                    # 기존 답안 삭제
-                    responses_df = responses_df[
-                        ~((responses_df['학생ID'] == username) & 
-                          (responses_df['회차'] == exam_round) & 
-                          (responses_df['과목'] == subject))
-                    ]
+                # 답안 입력 폼
+                with st.form("student_answer_form"):
+                    for i in range(num_questions):
+                        col1, col2 = st.columns([3, 1])
+                        with col1:
+                            st.write(f"{i+1}번")
+                        with col2:
+                            answer = st.text_input(f"답", key=f"student_q_{i}")
+                            answers.append(answer)
                     
-                    # 새 답안 추가
-                    for i, answer in enumerate(answers):
-                        new_row = {
-                            '학생ID': username,
-                            '회차': exam_round,
-                            '과목': subject,
-                            '문항번호': i+1,
-                            '입력답': answer
-                        }
-                        responses_df = pd.concat([responses_df, pd.DataFrame([new_row])], ignore_index=True)
-                    responses_df.to_csv(RESPONSES_FILE, index=False)
-                    st.success("답안이 제출되었습니다!")
+                    submitted = st.form_submit_button("답안 제출")
                     
-                    # 즉시 채점 결과 표시
-                    if os.path.exists(ANSWERS_FILE):
-                        answers_df = pd.read_csv(ANSWERS_FILE)
-                        filtered_answers = answers_df[
-                            (answers_df['회차'] == exam_round) & 
-                            (answers_df['과목'] == subject)
+                    if submitted:
+                        # 기존 답안 삭제
+                        responses_df = pd.read_csv(RESPONSES_FILE)
+                        responses_df = responses_df[
+                            ~((responses_df['학생ID'] == username) & 
+                              (responses_df['회차'] == exam_round) & 
+                              (responses_df['과목'] == subject))
                         ]
                         
-                        if not filtered_answers.empty:
-                            correct_count = 0
-                            for i, answer in enumerate(answers):
-                                correct_answer = filtered_answers[
-                                    filtered_answers['문항번호'] == i+1
-                                ]['정답'].iloc[0]
-                                
-                                if answer == correct_answer:
-                                    correct_count += 1
+                        # 새 답안 추가
+                        for i, answer in enumerate(answers):
+                            new_row = {
+                                '학생ID': username,
+                                '회차': exam_round,
+                                '과목': subject,
+                                '문항번호': i+1,
+                                '입력답': answer
+                            }
+                            responses_df = pd.concat([responses_df, pd.DataFrame([new_row])], ignore_index=True)
+                        responses_df.to_csv(RESPONSES_FILE, index=False)
+                        st.success("답안이 저장되었습니다!")
                         
-                            st.subheader("채점 결과")
-                            col1, col2, col3 = st.columns(3)
-                            with col1:
-                                st.metric("맞은 개수", correct_count)
-                            with col2:
-                                st.metric("틀린 개수", num_questions - correct_count)
-                            with col3:
-                                st.metric("정답률", f"{(correct_count/num_questions)*100:.1f}%")
-                        else:
-                            st.warning("해당 회차/과목의 정답이 아직 등록되지 않았습니다.")
+                        # 즉시 채점 결과 표시
+                        if os.path.exists(ANSWERS_FILE):
+                            answers_df = pd.read_csv(ANSWERS_FILE)
+                            filtered_answers = answers_df[
+                                (answers_df['회차'] == exam_round) & 
+                                (answers_df['과목'] == subject)
+                            ]
+                            
+                            if not filtered_answers.empty:
+                                correct_count = 0
+                                for i, answer in enumerate(answers):
+                                    correct_answer = filtered_answers[
+                                        filtered_answers['문항번호'] == i+1
+                                    ]['정답'].iloc[0]
+                                    
+                                    if answer == correct_answer:
+                                        correct_count += 1
+                            
+                                st.subheader("채점 결과")
+                                col1, col2, col3 = st.columns(3)
+                                with col1:
+                                    st.metric("맞은 개수", correct_count)
+                                with col2:
+                                    st.metric("틀린 개수", num_questions - correct_count)
+                                with col3:
+                                    st.metric("정답률", f"{(correct_count/num_questions)*100:.1f}%")
+                            else:
+                                st.warning("해당 회차/과목의 정답이 아직 등록되지 않았습니다.")
     elif authentication_status == False:
         st.error('아이디/비밀번호가 잘못되었습니다.')
     elif authentication_status == None:
