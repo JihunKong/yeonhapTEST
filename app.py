@@ -48,9 +48,12 @@ try:
         username = st.session_state["username"]
         
         # 디버깅 정보
+        st.write("=== 디버깅 정보 ===")
         st.write(f"로그인 상태: {st.session_state['authentication_status']}")
         st.write(f"사용자 이름: {name}")
         st.write(f"아이디: {username}")
+        st.write(f"인증된 사용자 목록: {config['preauthorized']}")
+        st.write("==================")
         
         # 사이드바
         authenticator.logout('로그아웃', 'sidebar')
@@ -84,73 +87,7 @@ try:
         initialize_data_files()
         
         # 메인 컨텐츠
-        if username in config['preauthorized']['students']:
-            st.header("학생용 자가채점")
-            
-            # 학생 정보 입력
-            student_id = username
-            exam_round = st.selectbox("모의고사 회차를 선택하세요", ["1차", "2차", "3차", "4차"])
-            
-            # 과목 선택
-            subject = st.selectbox(
-                "과목을 선택하세요",
-                ["국어", "수학", "영어", "한국사", "탐구1", "탐구2"]
-            )
-            
-            # 답안 입력
-            st.subheader("답안 입력")
-            num_questions = 20  # 기본 문항 수
-            answers = []
-            
-            for i in range(num_questions):
-                col1, col2 = st.columns([3, 1])
-                with col1:
-                    st.write(f"{i+1}번")
-                with col2:
-                    answer = st.text_input(f"답", key=f"q_{i}")
-                    answers.append(answer)
-            
-            if st.button("제출"):
-                # 답안 저장
-                responses_df = pd.read_csv(RESPONSES_FILE)
-                for i, answer in enumerate(answers):
-                    new_row = {
-                        '학생ID': student_id,
-                        '회차': exam_round,
-                        '과목': subject,
-                        '문항번호': i+1,
-                        '입력답': answer
-                    }
-                    responses_df = pd.concat([responses_df, pd.DataFrame([new_row])], ignore_index=True)
-                responses_df.to_csv(RESPONSES_FILE, index=False)
-                st.success("답안이 제출되었습니다!")
-                
-                # 즉시 채점 결과 표시
-                if os.path.exists(ANSWERS_FILE):
-                    answers_df = pd.read_csv(ANSWERS_FILE)
-                    filtered_answers = answers_df[
-                        (answers_df['회차'] == exam_round) & 
-                        (answers_df['과목'] == subject)
-                    ]
-                    
-                    correct_count = 0
-                    for i, answer in enumerate(answers):
-                        correct_answer = filtered_answers[
-                            filtered_answers['문항번호'] == i+1
-                        ]['정답'].iloc[0]
-                        
-                        if answer == correct_answer:
-                            correct_count += 1
-                    
-                    st.subheader("채점 결과")
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.metric("맞은 개수", correct_count)
-                    with col2:
-                        st.metric("틀린 개수", num_questions - correct_count)
-                    with col3:
-                        st.metric("정답률", f"{(correct_count/num_questions)*100:.1f}%")
-        elif username in config['preauthorized']['teachers']:
+        if username == 'teacher':
             st.header("교사용 관리")
             
             # 탭 생성
@@ -332,8 +269,71 @@ try:
                                  labels={'회차': '회차', '평균정답률': '평균 정답률 (%)'})
                     st.plotly_chart(fig)
         else:
-            st.error("접근 권한이 없습니다.")
-            st.stop()
+            st.header("학생용 자가채점")
+            
+            # 학생 정보 입력
+            student_id = username
+            exam_round = st.selectbox("모의고사 회차를 선택하세요", ["1차", "2차", "3차", "4차"])
+            
+            # 과목 선택
+            subject = st.selectbox(
+                "과목을 선택하세요",
+                ["국어", "수학", "영어", "한국사", "탐구1", "탐구2"]
+            )
+            
+            # 답안 입력
+            st.subheader("답안 입력")
+            num_questions = 20  # 기본 문항 수
+            answers = []
+            
+            for i in range(num_questions):
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.write(f"{i+1}번")
+                with col2:
+                    answer = st.text_input(f"답", key=f"q_{i}")
+                    answers.append(answer)
+            
+            if st.button("제출"):
+                # 답안 저장
+                responses_df = pd.read_csv(RESPONSES_FILE)
+                for i, answer in enumerate(answers):
+                    new_row = {
+                        '학생ID': student_id,
+                        '회차': exam_round,
+                        '과목': subject,
+                        '문항번호': i+1,
+                        '입력답': answer
+                    }
+                    responses_df = pd.concat([responses_df, pd.DataFrame([new_row])], ignore_index=True)
+                responses_df.to_csv(RESPONSES_FILE, index=False)
+                st.success("답안이 제출되었습니다!")
+                
+                # 즉시 채점 결과 표시
+                if os.path.exists(ANSWERS_FILE):
+                    answers_df = pd.read_csv(ANSWERS_FILE)
+                    filtered_answers = answers_df[
+                        (answers_df['회차'] == exam_round) & 
+                        (answers_df['과목'] == subject)
+                    ]
+                    
+                    correct_count = 0
+                    for i, answer in enumerate(answers):
+                        correct_answer = filtered_answers[
+                            filtered_answers['문항번호'] == i+1
+                        ]['정답'].iloc[0]
+                        
+                        if answer == correct_answer:
+                            correct_count += 1
+                    
+                    st.subheader("채점 결과")
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("맞은 개수", correct_count)
+                    with col2:
+                        st.metric("틀린 개수", num_questions - correct_count)
+                    with col3:
+                        st.metric("정답률", f"{(correct_count/num_questions)*100:.1f}%")
     else:
         st.error('아이디/비밀번호가 잘못되었습니다.')
         st.stop()
