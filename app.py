@@ -83,6 +83,7 @@ try:
         # 데이터 파일 경로
         ANSWERS_FILE = "data/answers.csv"
         RESPONSES_FILE = "data/responses.csv"
+        STUDENT_ANSWERS_FILE = "data/student_answers.csv"  # 학생 정답 파일 추가
         
         # 데이터 파일이 없으면 생성
         def initialize_data_files():
@@ -102,6 +103,15 @@ try:
                     '문항번호': [],
                     '입력답': []
                 }).to_csv(RESPONSES_FILE, index=False)
+            
+            if not os.path.exists(STUDENT_ANSWERS_FILE):
+                pd.DataFrame({
+                    '학생ID': [],
+                    '회차': [],
+                    '과목': [],
+                    '문항번호': [],
+                    '정답': []
+                }).to_csv(STUDENT_ANSWERS_FILE, index=False)
         
         initialize_data_files()
         
@@ -154,18 +164,26 @@ try:
             st.header("교사용 관리")
             
             # 탭 생성
-            tab1, tab2, tab3 = st.tabs(["정답 입력", "채점 결과", "통계 분석"])
+            tab1, tab2, tab3, tab4 = st.tabs(["정답 입력", "채점 결과", "통계 분석", "학생 정답 확인"])
             
             with tab1:
                 # 정답 입력
                 st.subheader("정답 입력")
-                exam_round = st.selectbox("모의고사 회차를 선택하세요", ["1차", "2차", "3차", "4차"])
+                exam_round = st.selectbox("모의고사 회차를 선택하세요", ["1차", "2차", "3차", "4차"], key='teacher_round')
                 subject = st.selectbox(
                     "과목을 선택하세요",
-                    ["국어", "수학", "영어", "한국사", "탐구1", "탐구2"]
+                    ["국어", "수학", "영어", "한국사", "탐구1", "탐구2"],
+                    key='teacher_subject'
                 )
                 
                 num_questions = st.number_input("문항 수를 입력하세요", min_value=1, max_value=50, value=20)
+                
+                # 기존 정답 불러오기
+                existing_answers = pd.read_csv(ANSWERS_FILE)
+                filtered_answers = existing_answers[
+                    (existing_answers['회차'] == exam_round) & 
+                    (existing_answers['과목'] == subject)
+                ]
                 
                 answers = []
                 for i in range(num_questions):
@@ -173,12 +191,25 @@ try:
                     with col1:
                         st.write(f"{i+1}번")
                     with col2:
-                        answer = st.text_input(f"정답", key=f"q_{i}")
+                        # 기존 정답이 있으면 표시
+                        default_answer = ""
+                        if not filtered_answers.empty:
+                            answer_row = filtered_answers[filtered_answers['문항번호'] == i+1]
+                            if not answer_row.empty:
+                                default_answer = answer_row['정답'].iloc[0]
+                        
+                        answer = st.text_input(f"정답", key=f"teacher_q_{i}", value=default_answer)
                         answers.append(answer)
                 
-                if st.button("정답 저장"):
-                    # 정답 저장
+                if st.button("정답 저장", key='teacher_save'):
+                    # 기존 정답 삭제
                     answers_df = pd.read_csv(ANSWERS_FILE)
+                    answers_df = answers_df[
+                        ~((answers_df['회차'] == exam_round) & 
+                          (answers_df['과목'] == subject))
+                    ]
+                    
+                    # 새 정답 추가
                     for i, answer in enumerate(answers):
                         new_row = {
                             '회차': exam_round,
@@ -331,72 +362,165 @@ try:
                                  title='회차별 평균 정답률 추이',
                                  labels={'회차': '회차', '평균정답률': '평균 정답률 (%)'})
                     st.plotly_chart(fig)
+            
+            with tab4:
+                # 학생 정답 확인
+                st.subheader("학생 정답 확인")
+                if os.path.exists(STUDENT_ANSWERS_FILE):
+                    student_answers_df = pd.read_csv(STUDENT_ANSWERS_FILE)
+                    if not student_answers_df.empty:
+                        selected_round = st.selectbox("확인할 회차를 선택하세요", student_answers_df['회차'].unique(), key='teacher_check_round')
+                        selected_subject = st.selectbox("확인할 과목을 선택하세요", student_answers_df['과목'].unique(), key='teacher_check_subject')
+                        
+                        filtered_student_answers = student_answers_df[
+                            (student_answers_df['회차'] == selected_round) & 
+                            (student_answers_df['과목'] == selected_subject)
+                        ]
+                        
+                        if not filtered_student_answers.empty:
+                            st.dataframe(filtered_student_answers)
+                        else:
+                            st.info("해당 회차/과목에 대한 학생 정답이 없습니다.")
+                    else:
+                        st.info("학생이 입력한 정답이 없습니다.")
+                else:
+                    st.info("학생 정답 파일이 없습니다.")
         else:
             st.header("학생용 자가채점")
             
-            # 학생 정보 입력
-            student_id = username
-            exam_round = st.selectbox("모의고사 회차를 선택하세요", ["1차", "2차", "3차", "4차"])
+            # 탭 생성
+            tab1, tab2 = st.tabs(["답안 입력", "정답 입력"])
             
-            # 과목 선택
-            subject = st.selectbox(
-                "과목을 선택하세요",
-                ["국어", "수학", "영어", "한국사", "탐구1", "탐구2"]
-            )
-            
-            # 답안 입력
-            st.subheader("답안 입력")
-            num_questions = 20  # 기본 문항 수
-            answers = []
-            
-            for i in range(num_questions):
-                col1, col2 = st.columns([3, 1])
-                with col1:
-                    st.write(f"{i+1}번")
-                with col2:
-                    answer = st.text_input(f"답", key=f"q_{i}")
-                    answers.append(answer)
-            
-            if st.button("제출"):
-                # 답안 저장
-                responses_df = pd.read_csv(RESPONSES_FILE)
-                for i, answer in enumerate(answers):
-                    new_row = {
-                        '학생ID': student_id,
-                        '회차': exam_round,
-                        '과목': subject,
-                        '문항번호': i+1,
-                        '입력답': answer
-                    }
-                    responses_df = pd.concat([responses_df, pd.DataFrame([new_row])], ignore_index=True)
-                responses_df.to_csv(RESPONSES_FILE, index=False)
-                st.success("답안이 제출되었습니다!")
+            with tab1:
+                # 답안 입력
+                st.subheader("답안 입력")
+                student_id = username
+                exam_round = st.selectbox("모의고사 회차를 선택하세요", ["1차", "2차", "3차", "4차"], key='student_round')
+                subject = st.selectbox(
+                    "과목을 선택하세요",
+                    ["국어", "수학", "영어", "한국사", "탐구1", "탐구2"],
+                    key='student_subject'
+                )
                 
-                # 즉시 채점 결과 표시
-                if os.path.exists(ANSWERS_FILE):
-                    answers_df = pd.read_csv(ANSWERS_FILE)
-                    filtered_answers = answers_df[
-                        (answers_df['회차'] == exam_round) & 
-                        (answers_df['과목'] == subject)
+                num_questions = 20  # 기본 문항 수
+                answers = []
+                
+                for i in range(num_questions):
+                    col1, col2 = st.columns([3, 1])
+                    with col1:
+                        st.write(f"{i+1}번")
+                    with col2:
+                        answer = st.text_input(f"답", key=f"student_q_{i}")
+                        answers.append(answer)
+                
+                if st.button("제출", key='student_submit'):
+                    # 답안 저장
+                    responses_df = pd.read_csv(RESPONSES_FILE)
+                    # 기존 답안 삭제
+                    responses_df = responses_df[
+                        ~((responses_df['학생ID'] == student_id) & 
+                          (responses_df['회차'] == exam_round) & 
+                          (responses_df['과목'] == subject))
                     ]
                     
-                    correct_count = 0
+                    # 새 답안 추가
                     for i, answer in enumerate(answers):
-                        correct_answer = filtered_answers[
-                            filtered_answers['문항번호'] == i+1
-                        ]['정답'].iloc[0]
-                        
-                        if answer == correct_answer:
-                            correct_count += 1
+                        new_row = {
+                            '학생ID': student_id,
+                            '회차': exam_round,
+                            '과목': subject,
+                            '문항번호': i+1,
+                            '입력답': answer
+                        }
+                        responses_df = pd.concat([responses_df, pd.DataFrame([new_row])], ignore_index=True)
+                    responses_df.to_csv(RESPONSES_FILE, index=False)
+                    st.success("답안이 제출되었습니다!")
                     
-                    st.subheader("채점 결과")
-                    col1, col2, col3 = st.columns(3)
+                    # 즉시 채점 결과 표시
+                    if os.path.exists(ANSWERS_FILE):
+                        answers_df = pd.read_csv(ANSWERS_FILE)
+                        filtered_answers = answers_df[
+                            (answers_df['회차'] == exam_round) & 
+                            (answers_df['과목'] == subject)
+                        ]
+                        
+                        if not filtered_answers.empty:
+                            correct_count = 0
+                            for i, answer in enumerate(answers):
+                                correct_answer = filtered_answers[
+                                    filtered_answers['문항번호'] == i+1
+                                ]['정답'].iloc[0]
+                                
+                                if answer == correct_answer:
+                                    correct_count += 1
+                        
+                            st.subheader("채점 결과")
+                            col1, col2, col3 = st.columns(3)
+                            with col1:
+                                st.metric("맞은 개수", correct_count)
+                            with col2:
+                                st.metric("틀린 개수", num_questions - correct_count)
+                            with col3:
+                                st.metric("정답률", f"{(correct_count/num_questions)*100:.1f}%")
+                        else:
+                            st.warning("해당 회차/과목의 정답이 아직 등록되지 않았습니다.")
+            
+            with tab2:
+                # 정답 입력
+                st.subheader("정답 입력")
+                exam_round = st.selectbox("모의고사 회차를 선택하세요", ["1차", "2차", "3차", "4차"], key='student_answer_round')
+                subject = st.selectbox(
+                    "과목을 선택하세요",
+                    ["국어", "수학", "영어", "한국사", "탐구1", "탐구2"],
+                    key='student_answer_subject'
+                )
+                
+                # 기존 정답 불러오기
+                student_answers_df = pd.read_csv(STUDENT_ANSWERS_FILE)
+                filtered_answers = student_answers_df[
+                    (student_answers_df['학생ID'] == student_id) & 
+                    (student_answers_df['회차'] == exam_round) & 
+                    (student_answers_df['과목'] == subject)
+                ]
+                
+                num_questions = 20  # 기본 문항 수
+                answers = []
+                
+                for i in range(num_questions):
+                    col1, col2 = st.columns([3, 1])
                     with col1:
-                        st.metric("맞은 개수", correct_count)
+                        st.write(f"{i+1}번")
                     with col2:
-                        st.metric("틀린 개수", num_questions - correct_count)
-                    with col3:
-                        st.metric("정답률", f"{(correct_count/num_questions)*100:.1f}%")
+                        # 기존 정답이 있으면 표시
+                        default_answer = ""
+                        if not filtered_answers.empty:
+                            answer_row = filtered_answers[filtered_answers['문항번호'] == i+1]
+                            if not answer_row.empty:
+                                default_answer = answer_row['정답'].iloc[0]
+                        
+                        answer = st.text_input(f"정답", key=f"student_answer_q_{i}", value=default_answer)
+                        answers.append(answer)
+                
+                if st.button("정답 저장", key='student_answer_save'):
+                    # 기존 정답 삭제
+                    student_answers_df = student_answers_df[
+                        ~((student_answers_df['학생ID'] == student_id) & 
+                          (student_answers_df['회차'] == exam_round) & 
+                          (student_answers_df['과목'] == subject))
+                    ]
+                    
+                    # 새 정답 추가
+                    for i, answer in enumerate(answers):
+                        new_row = {
+                            '학생ID': student_id,
+                            '회차': exam_round,
+                            '과목': subject,
+                            '문항번호': i+1,
+                            '정답': answer
+                        }
+                        student_answers_df = pd.concat([student_answers_df, pd.DataFrame([new_row])], ignore_index=True)
+                    student_answers_df.to_csv(STUDENT_ANSWERS_FILE, index=False)
+                    st.success("정답이 저장되었습니다!")
     elif authentication_status == False:
         st.error('아이디/비밀번호가 잘못되었습니다.')
     elif authentication_status == None:
