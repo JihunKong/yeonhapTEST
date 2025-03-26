@@ -606,12 +606,13 @@ try:
                             if not filtered_answers.empty:
                                 correct_count = 0
                                 for i, answer in enumerate(answers):
-                                    correct_answer = filtered_answers[
-                                        filtered_answers['문항번호'] == i+1
-                                    ]['정답'].iloc[0]
-                                    
-                                    if answer == correct_answer:
-                                        correct_count += 1
+                                    if answer:  # 답안이 있는 경우만 채점
+                                        correct_answer = filtered_answers[
+                                            filtered_answers['문항번호'] == i+1
+                                        ]['정답'].iloc[0]
+                                        
+                                        if str(answer).strip() == str(correct_answer).strip():  # 문자열로 변환하고 공백 제거
+                                            correct_count += 1
                             
                                 st.subheader("채점 결과")
                                 col1, col2, col3 = st.columns(3)
