@@ -11,6 +11,13 @@ from yaml.loader import SafeLoader
 # 환경 변수 로드
 load_dotenv()
 
+# 페이지 설정
+st.set_page_config(
+    page_title="모의고사 자가채점 시스템",
+    page_icon="📝",
+    layout="wide"
+)
+
 # 인증 설정
 with open('config.yaml') as file:
     config = yaml.load(file, Loader=SafeLoader)
@@ -23,6 +30,14 @@ authenticator = stauth.Authenticate(
     config['preauthorized']
 )
 
+# 세션 상태 초기화
+if 'authentication_status' not in st.session_state:
+    st.session_state['authentication_status'] = None
+if 'name' not in st.session_state:
+    st.session_state['name'] = None
+if 'username' not in st.session_state:
+    st.session_state['username'] = None
+
 # 인증
 try:
     authenticator.login(fields=['username', 'password'])
@@ -31,6 +46,7 @@ try:
         name = st.session_state["name"]
         username = st.session_state["username"]
         st.success(f"로그인 성공! {name}님 환영합니다.")
+        st.rerun()  # 페이지 새로고침
     else:
         st.error('아이디/비밀번호가 잘못되었습니다.')
         st.stop()
@@ -38,18 +54,11 @@ except Exception as e:
     st.error(f'로그인 중 오류가 발생했습니다: {str(e)}')
     st.stop()
 
-# 페이지 설정
-st.set_page_config(
-    page_title="모의고사 자가채점 시스템",
-    page_icon="📝",
-    layout="wide"
-)
-
 # 사이드바
 authenticator.logout('로그아웃', 'sidebar')
 
 # 제목
-st.title(f"📝 모의고사 자가채점 시스템 - {name}님 환영합니다")
+st.title(f"📝 모의고사 자가채점 시스템 - {st.session_state['name']}님 환영합니다")
 
 # 데이터 파일 경로
 ANSWERS_FILE = "data/answers.csv"
