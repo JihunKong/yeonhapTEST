@@ -25,7 +25,7 @@ authenticator = stauth.Authenticate(
 
 # 인증
 try:
-    authenticator.login("로그인", "main")
+    authenticator.login(fields=['username', 'password'])
     
     if st.session_state["authentication_status"]:
         name = st.session_state["name"]
