@@ -1,0 +1,26 @@
+credentials:
+  usernames:
+    teacher:
+      email: teacher@example.com
+      name: 교사
+      password: $2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW  # password: teacher123
+    student1:
+      email: student1@example.com
+      name: 학생1
+      password: $2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW  # password: student123
+    student2:
+      email: student2@example.com
+      name: 학생2
+      password: $2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW  # password: student123
+
+cookie:
+  expiry_days: 30
+  key: some_signature_key
+  name: some_cookie_name
+
+preauthorized:
+  teachers:
+    - teacher
+  students:
+    - student1
+    - student2 
