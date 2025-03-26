@@ -15,8 +15,8 @@ credentials:
 
 cookie:
   expiry_days: 30
-  key: "yeonhap_test_key_123"
-  name: "yeonhap_test_cookie"
+  key: some_signature_key
+  name: some_cookie_name
 
 preauthorized:
   teachers:
