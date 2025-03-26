@@ -656,7 +656,26 @@ try:
                                     with col2:
                                         st.metric("틀린 개수", total_answered - correct_count)
                                     with col3:
-                                        st.metric("정답률", f"{(correct_count/total_answered)*100:.1f}%")
+                                        # 배점을 반영한 점수 계산
+                                        total_score = 0
+                                        for i, answer in enumerate(answers):
+                                            if answer:  # 답안이 있는 경우만 점수 계산
+                                                try:
+                                                    answer_int = int(float(answer))
+                                                    correct_answer_int = int(float(filtered_answers[
+                                                        filtered_answers['문항번호'] == i+1
+                                                    ]['정답'].iloc[0]))
+                                                    
+                                                    if answer_int == correct_answer_int:
+                                                        # 해당 문항의 배점 가져오기
+                                                        point = filtered_answers[
+                                                            filtered_answers['문항번호'] == i+1
+                                                        ]['배점'].iloc[0]
+                                                        total_score += point
+                                                except (ValueError, TypeError):
+                                                    continue
+                                        
+                                        st.metric("총점", f"{total_score:.1f}점")
                                 else:
                                     st.warning("답안을 입력해주세요.")
                             else:
