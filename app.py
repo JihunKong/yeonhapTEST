@@ -24,13 +24,17 @@ authenticator = stauth.Authenticate(
 )
 
 # 인증
-authenticator.login()
-
-if st.session_state["authentication_status"]:
-    name = st.session_state["name"]
-    username = st.session_state["username"]
-else:
-    st.error('아이디/비밀번호가 잘못되었습니다.')
+try:
+    authenticator.login("로그인", "main")
+    
+    if st.session_state["authentication_status"]:
+        name = st.session_state["name"]
+        username = st.session_state["username"]
+    else:
+        st.error('아이디/비밀번호가 잘못되었습니다.')
+        st.stop()
+except Exception as e:
+    st.error(f'로그인 중 오류가 발생했습니다: {str(e)}')
     st.stop()
 
 # 페이지 설정

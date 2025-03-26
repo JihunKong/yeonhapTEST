@@ -3,24 +3,23 @@ credentials:
     teacher:
       email: teacher@example.com
       name: 교사
-      password: $2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW  # password: teacher123
+      password: $2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW
     student1:
       email: student1@example.com
       name: 학생1
-      password: $2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW  # password: student123
+      password: $2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW
     student2:
       email: student2@example.com
       name: 학생2
-      password: $2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW  # password: student123
+      password: $2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW
 
 cookie:
   expiry_days: 30
-  key: some_signature_key
-  name: some_cookie_name
+  key: "yeonhap_test_key_123"
+  name: "yeonhap_test_cookie"
 
 preauthorized:
-  teachers:
-    - teacher
-  students:
-    - student1
-    - student2 
+  emails:
+    - teacher@example.com
+    - student1@example.com
+    - student2@example.com 
