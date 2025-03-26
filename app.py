@@ -30,6 +30,7 @@ try:
     if st.session_state["authentication_status"]:
         name = st.session_state["name"]
         username = st.session_state["username"]
+        st.success(f"로그인 성공! {name}님 환영합니다.")
     else:
         st.error('아이디/비밀번호가 잘못되었습니다.')
         st.stop()

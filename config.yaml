@@ -19,7 +19,8 @@ cookie:
   name: "yeonhap_test_cookie"
 
 preauthorized:
-  emails:
-    - teacher@example.com
-    - student1@example.com
-    - student2@example.com 
+  teachers:
+    - teacher
+  students:
+    - student1
+    - student2 
