@@ -276,7 +276,7 @@ try:
                                 '회차': exam_round,
                                 '과목': subject,
                                 '문항번호': i,
-                                '정답': answers[i],
+                                '정답': str(int(float(answers[i]))) if answers[i] else "",  # 소수점 제거
                                 '배점': points[i]  # 배점 추가
                             }
                             answers_df = pd.concat([answers_df, pd.DataFrame([new_row])], ignore_index=True)
