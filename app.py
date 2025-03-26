@@ -635,16 +635,18 @@ try:
                                             filtered_answers['문항번호'] == i+1
                                         ]['정답'].iloc[0]
                                         
-                                        # 정답과 입력답을 문자열로 변환하고 공백 제거
-                                        answer_str = str(answer).strip()
-                                        correct_answer_str = str(correct_answer).strip()
-                                        
-                                        # 디버깅을 위한 출력
-                                        st.write(f"문항 {i+1}: 입력답={answer_str}, 정답={correct_answer_str}")
-                                        
-                                        # 정답과 입력답이 정확히 일치하는지 확인
-                                        if answer_str == correct_answer_str:
-                                            correct_count += 1
+                                        # 정답과 입력답을 정수로 변환하여 비교
+                                        try:
+                                            answer_int = int(float(answer))
+                                            correct_answer_int = int(float(correct_answer))
+                                            
+                                            # 디버깅을 위한 출력
+                                            st.write(f"문항 {i+1}: 입력답={answer_int}, 정답={correct_answer_int}")
+                                            
+                                            if answer_int == correct_answer_int:
+                                                correct_count += 1
+                                        except (ValueError, TypeError):
+                                            st.write(f"문항 {i+1}: 입력답 또는 정답이 숫자가 아닙니다.")
                                 
                                 if total_answered > 0:  # 답안을 하나라도 입력한 경우에만 결과 표시
                                     st.subheader("채점 결과")
