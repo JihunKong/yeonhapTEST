@@ -545,19 +545,28 @@ try:
                     key='student_subject'
                 )
                 
-                # 교사가 설정한 문항 수 확인
-                answers_df = pd.read_csv(ANSWERS_FILE)
-                filtered_answers = answers_df[
-                    (answers_df['회차'] == exam_round) & 
-                    (answers_df['과목'] == subject)
-                ]
+                # 과목별 문항 수 설정
+                subject_questions = {
+                    "국어": 45,
+                    "수학": 30,
+                    "영어": 45,
+                    "한국사": 20,
+                    "물리학": 20,
+                    "화학": 20,
+                    "생명과학": 20,
+                    "지구과학": 20,
+                    "생활과 윤리": 20,
+                    "윤리와 사상": 20,
+                    "한국지리": 20,
+                    "세계지리": 20,
+                    "동아시아사": 20,
+                    "세계사": 20,
+                    "경제": 20,
+                    "정치와 법": 20,
+                    "사회문화": 20
+                }
                 
-                if filtered_answers.empty:
-                    st.warning("해당 회차/과목의 정답이 아직 등록되지 않았습니다.")
-                    st.stop()
-                
-                num_questions = len(filtered_answers)
-                answers = []
+                num_questions = subject_questions[subject]
                 
                 # 답안 입력 폼
                 with st.form("student_answer_form"):
