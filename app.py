@@ -189,6 +189,9 @@ try:
                     key='teacher_subject'
                 )
                 
+                # 문항 수 설정
+                num_questions = st.number_input("문항 수를 입력하세요", min_value=1, max_value=50, value=20)
+                
                 # 기존 정답 불러오기
                 answers_df = pd.read_csv(ANSWERS_FILE)
                 existing_answers = answers_df[
@@ -212,7 +215,7 @@ try:
                     answers = {}
                     points = {}  # 배점 저장용 딕셔너리
                     
-                    for i in range(1, 21):
+                    for i in range(1, num_questions + 1):
                         col1, col2 = st.columns([3, 1])
                         with col1:
                             # 기존 정답이 있으면 표시
@@ -240,7 +243,7 @@ try:
                         ]
                         
                         # 새로운 정답 추가
-                        for i in range(1, 21):
+                        for i in range(1, num_questions + 1):
                             new_row = {
                                 '회차': exam_round,
                                 '과목': subject,
@@ -510,7 +513,18 @@ try:
                     key='student_subject'
                 )
                 
-                num_questions = 20  # 기본 문항 수
+                # 교사가 설정한 문항 수 확인
+                answers_df = pd.read_csv(ANSWERS_FILE)
+                filtered_answers = answers_df[
+                    (answers_df['회차'] == exam_round) & 
+                    (answers_df['과목'] == subject)
+                ]
+                
+                if filtered_answers.empty:
+                    st.warning("해당 회차/과목의 정답이 아직 등록되지 않았습니다.")
+                    st.stop()
+                
+                num_questions = len(filtered_answers)
                 answers = []
                 
                 for i in range(num_questions):
