@@ -622,7 +622,14 @@ try:
                                             filtered_answers['문항번호'] == i+1
                                         ]['정답'].iloc[0]
                                         
-                                        if str(answer).strip() == str(correct_answer).strip():  # 문자열로 변환하고 공백 제거
+                                        # 정답과 입력답을 문자열로 변환하고 공백 제거
+                                        answer_str = str(answer).strip()
+                                        correct_answer_str = str(correct_answer).strip()
+                                        
+                                        # 디버깅을 위한 출력
+                                        st.write(f"문항 {i+1}: 입력답={answer_str}, 정답={correct_answer_str}")
+                                        
+                                        if answer_str == correct_answer_str:
                                             correct_count += 1
                                 
                                 if total_answered > 0:  # 답안을 하나라도 입력한 경우에만 결과 표시
