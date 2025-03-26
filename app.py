@@ -219,11 +219,19 @@ try:
                         col1, col2 = st.columns([3, 1])
                         with col1:
                             # 기존 정답이 있으면 표시
-                            existing_answer = existing_answers[existing_answers['문항번호'] == i]['정답'].iloc[0] if not existing_answers.empty else ""
+                            existing_answer = ""
+                            if not existing_answers.empty:
+                                answer_row = existing_answers[existing_answers['문항번호'] == i]
+                                if not answer_row.empty:
+                                    existing_answer = answer_row['정답'].iloc[0]
                             answers[i] = st.text_input(f"{i}번", value=existing_answer)
                         with col2:
                             # 기존 배점이 있으면 표시, 없으면 기본 배점 사용
-                            existing_point = existing_answers[existing_answers['문항번호'] == i]['배점'].iloc[0] if not existing_answers.empty else default_point
+                            existing_point = default_point
+                            if not existing_answers.empty:
+                                point_row = existing_answers[existing_answers['문항번호'] == i]
+                                if not point_row.empty:
+                                    existing_point = point_row['배점'].iloc[0]
                             points[i] = st.number_input(
                                 f"{i}번 배점",
                                 min_value=0.0,
@@ -454,34 +462,38 @@ try:
             default_subject1 = selected_subjects['탐구1'].iloc[0] if not selected_subjects.empty else None
             default_subject2 = selected_subjects['탐구2'].iloc[0] if not selected_subjects.empty else None
             
-            col1, col2 = st.columns(2)
-            with col1:
-                subject1 = st.selectbox("탐구1 과목을 선택하세요", 
-                                      science_subjects + social_subjects,
-                                      index=(science_subjects + social_subjects).index(default_subject1) if default_subject1 else 0)
-            with col2:
-                remaining_subjects = [s for s in science_subjects + social_subjects if s != subject1]
-                subject2 = st.selectbox("탐구2 과목을 선택하세요", 
-                                      remaining_subjects,
-                                      index=remaining_subjects.index(default_subject2) if default_subject2 in remaining_subjects else 0)
-            
-            if st.button("탐구 과목 저장"):
-                # 기존 선택 삭제
-                subjects_df = subjects_df[
-                    ~((subjects_df['학생ID'] == username) & 
-                      (subjects_df['회차'] == exam_round))
-                ]
+            # 탐구 과목 선택 폼
+            with st.form("subject_selection_form"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    subject1 = st.selectbox("탐구1 과목을 선택하세요", 
+                                          science_subjects + social_subjects,
+                                          index=(science_subjects + social_subjects).index(default_subject1) if default_subject1 else 0)
+                with col2:
+                    remaining_subjects = [s for s in science_subjects + social_subjects if s != subject1]
+                    subject2 = st.selectbox("탐구2 과목을 선택하세요", 
+                                          remaining_subjects,
+                                          index=remaining_subjects.index(default_subject2) if default_subject2 in remaining_subjects else 0)
                 
-                # 새로운 선택 추가
-                new_row = {
-                    '학생ID': username,
-                    '회차': exam_round,
-                    '탐구1': subject1,
-                    '탐구2': subject2
-                }
-                subjects_df = pd.concat([subjects_df, pd.DataFrame([new_row])], ignore_index=True)
-                subjects_df.to_csv(STUDENT_SUBJECTS_FILE, index=False)
-                st.success("탐구 과목이 저장되었습니다!")
+                submitted = st.form_submit_button("탐구 과목 저장")
+                
+                if submitted:
+                    # 기존 선택 삭제
+                    subjects_df = subjects_df[
+                        ~((subjects_df['학생ID'] == username) & 
+                          (subjects_df['회차'] == exam_round))
+                    ]
+                    
+                    # 새로운 선택 추가
+                    new_row = {
+                        '학생ID': username,
+                        '회차': exam_round,
+                        '탐구1': subject1,
+                        '탐구2': subject2
+                    }
+                    subjects_df = pd.concat([subjects_df, pd.DataFrame([new_row])], ignore_index=True)
+                    subjects_df.to_csv(STUDENT_SUBJECTS_FILE, index=False)
+                    st.success("탐구 과목이 저장되었습니다!")
             
             # 탭 생성
             tab1, = st.tabs(["답안 입력"])  # 정답 입력 탭 제거
