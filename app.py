@@ -223,7 +223,7 @@ try:
                             if not existing_answers.empty:
                                 answer_row = existing_answers[existing_answers['문항번호'] == i]
                                 if not answer_row.empty:
-                                    existing_answer = answer_row['정답'].iloc[0]
+                                    existing_answer = str(int(answer_row['정답'].iloc[0]))  # 소수점 제거
                             answers[i] = st.text_input(f"{i}번", value=existing_answer)
                         with col2:
                             # 기존 배점이 있으면 표시, 없으면 기본 배점 사용
