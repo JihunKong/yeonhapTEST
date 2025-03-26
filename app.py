@@ -189,8 +189,28 @@ try:
                     key='teacher_subject'
                 )
                 
-                # 문항 수 설정
-                num_questions = st.number_input("문항 수를 입력하세요", min_value=1, max_value=50, value=20)
+                # 과목별 문항 수 설정
+                subject_questions = {
+                    "국어": 45,
+                    "수학": 30,
+                    "영어": 45,
+                    "한국사": 20,
+                    "물리학": 20,
+                    "화학": 20,
+                    "생명과학": 20,
+                    "지구과학": 20,
+                    "생활과 윤리": 20,
+                    "윤리와 사상": 20,
+                    "한국지리": 20,
+                    "세계지리": 20,
+                    "동아시아사": 20,
+                    "세계사": 20,
+                    "경제": 20,
+                    "정치와 법": 20,
+                    "사회문화": 20
+                }
+                
+                num_questions = subject_questions[subject]
                 
                 # 기존 정답 불러오기
                 answers_df = pd.read_csv(ANSWERS_FILE)
