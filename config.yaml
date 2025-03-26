@@ -80,7 +80,14 @@ credentials:
       email: student18@example.com
       name: 허지연
       password: student123
-
+    student19:
+      email: student19@example.com
+      name: 김시온
+      password: student123
+    student18:
+      email: student20@example.com
+      name: 박수민
+      password: student123      
 cookie:
   expiry_days: 30
   key: yeonhap_test_key_123
