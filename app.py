@@ -642,6 +642,7 @@ try:
                                         # 디버깅을 위한 출력
                                         st.write(f"문항 {i+1}: 입력답={answer_str}, 정답={correct_answer_str}")
                                         
+                                        # 정답과 입력답이 정확히 일치하는지 확인
                                         if answer_str == correct_answer_str:
                                             correct_count += 1
                                 
