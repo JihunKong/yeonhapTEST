@@ -83,7 +83,8 @@ try:
         # 데이터 파일 경로
         ANSWERS_FILE = "data/answers.csv"
         RESPONSES_FILE = "data/responses.csv"
-        STUDENT_ANSWERS_FILE = "data/student_answers.csv"  # 학생 정답 파일 추가
+        STUDENT_ANSWERS_FILE = "data/student_answers.csv"
+        STUDENT_SUBJECTS_FILE = "data/student_subjects.csv"  # 학생별 과목 선택 파일 추가
         
         # 데이터 파일이 없으면 생성
         def initialize_data_files():
@@ -112,6 +113,14 @@ try:
                     '문항번호': [],
                     '정답': []
                 }).to_csv(STUDENT_ANSWERS_FILE, index=False)
+                
+            if not os.path.exists(STUDENT_SUBJECTS_FILE):
+                pd.DataFrame({
+                    '학생ID': [],
+                    '회차': [],
+                    '탐구1': [],
+                    '탐구2': []
+                }).to_csv(STUDENT_SUBJECTS_FILE, index=False)
         
         initialize_data_files()
         
@@ -172,7 +181,10 @@ try:
                 exam_round = st.selectbox("모의고사 회차를 선택하세요", ["1차", "2차", "3차", "4차"], key='teacher_round')
                 subject = st.selectbox(
                     "과목을 선택하세요",
-                    ["국어", "수학", "영어", "한국사", "탐구1", "탐구2"],
+                    ["국어", "수학", "영어", "한국사", 
+                     "물리학", "화학", "생명과학", "지구과학", 
+                     "생활과 윤리", "윤리와 사상", "한국지리", "세계지리",
+                     "동아시아사", "세계사", "경제", "정치와 법", "사회문화"],
                     key='teacher_subject'
                 )
                 
@@ -299,69 +311,80 @@ try:
                     responses_df = pd.read_csv(RESPONSES_FILE)
                     answers_df = pd.read_csv(ANSWERS_FILE)
                     
-                    # 과목별 평균 정답률
-                    st.subheader("과목별 평균 정답률")
-                    subject_stats = []
-                    for subject in responses_df['과목'].unique():
-                        subject_responses = responses_df[responses_df['과목'] == subject]
-                        subject_answers = answers_df[answers_df['과목'] == subject]
-                        
-                        correct_count = 0
-                        total_count = 0
-                        
-                        for _, response in subject_responses.iterrows():
-                            correct_answer = subject_answers[
-                                subject_answers['문항번호'] == response['문항번호']
-                            ]['정답'].iloc[0]
+                    if not responses_df.empty and not answers_df.empty:
+                        # 과목별 평균 정답률
+                        st.subheader("과목별 평균 정답률")
+                        subject_stats = []
+                        for subject in responses_df['과목'].unique():
+                            subject_responses = responses_df[responses_df['과목'] == subject]
+                            subject_answers = answers_df[answers_df['과목'] == subject]
                             
-                            if response['입력답'] == correct_answer:
-                                correct_count += 1
-                            total_count += 1
-                        
-                        subject_stats.append({
-                            '과목': subject,
-                            '평균정답률': (correct_count/total_count)*100 if total_count > 0 else 0
-                        })
-                    
-                    subject_stats_df = pd.DataFrame(subject_stats)
-                    
-                    # 과목별 평균 정답률 시각화
-                    fig = px.bar(subject_stats_df, x='과목', y='평균정답률',
-                                title='과목별 평균 정답률',
-                                labels={'과목': '과목', '평균정답률': '평균 정답률 (%)'})
-                    st.plotly_chart(fig)
-                    
-                    # 회차별 추이 분석
-                    st.subheader("회차별 추이 분석")
-                    round_stats = []
-                    for round_num in responses_df['회차'].unique():
-                        round_responses = responses_df[responses_df['회차'] == round_num]
-                        round_answers = answers_df[answers_df['회차'] == round_num]
-                        
-                        correct_count = 0
-                        total_count = 0
-                        
-                        for _, response in round_responses.iterrows():
-                            correct_answer = round_answers[
-                                round_answers['문항번호'] == response['문항번호']
-                            ]['정답'].iloc[0]
+                            correct_count = 0
+                            total_count = 0
                             
-                            if response['입력답'] == correct_answer:
-                                correct_count += 1
-                            total_count += 1
+                            for _, response in subject_responses.iterrows():
+                                correct_answer = subject_answers[
+                                    subject_answers['문항번호'] == response['문항번호']
+                                ]['정답'].iloc[0]
+                                
+                                if response['입력답'] == correct_answer:
+                                    correct_count += 1
+                                total_count += 1
+                            
+                            subject_stats.append({
+                                '과목': subject,
+                                '평균정답률': (correct_count/total_count)*100 if total_count > 0 else 0
+                            })
                         
-                        round_stats.append({
-                            '회차': round_num,
-                            '평균정답률': (correct_count/total_count)*100 if total_count > 0 else 0
-                        })
-                    
-                    round_stats_df = pd.DataFrame(round_stats)
-                    
-                    # 회차별 추이 시각화
-                    fig = px.line(round_stats_df, x='회차', y='평균정답률',
-                                 title='회차별 평균 정답률 추이',
-                                 labels={'회차': '회차', '평균정답률': '평균 정답률 (%)'})
-                    st.plotly_chart(fig)
+                        if subject_stats:
+                            subject_stats_df = pd.DataFrame(subject_stats)
+                            
+                            # 과목별 평균 정답률 시각화
+                            fig = px.bar(subject_stats_df, x='과목', y='평균정답률',
+                                        title='과목별 평균 정답률',
+                                        labels={'과목': '과목', '평균정답률': '평균 정답률 (%)'})
+                            st.plotly_chart(fig)
+                        else:
+                            st.info("아직 과목별 통계 데이터가 없습니다.")
+                        
+                        # 회차별 추이 분석
+                        st.subheader("회차별 추이 분석")
+                        round_stats = []
+                        for round_num in responses_df['회차'].unique():
+                            round_responses = responses_df[responses_df['회차'] == round_num]
+                            round_answers = answers_df[answers_df['회차'] == round_num]
+                            
+                            correct_count = 0
+                            total_count = 0
+                            
+                            for _, response in round_responses.iterrows():
+                                correct_answer = round_answers[
+                                    round_answers['문항번호'] == response['문항번호']
+                                ]['정답'].iloc[0]
+                                
+                                if response['입력답'] == correct_answer:
+                                    correct_count += 1
+                                total_count += 1
+                            
+                            round_stats.append({
+                                '회차': round_num,
+                                '평균정답률': (correct_count/total_count)*100 if total_count > 0 else 0
+                            })
+                        
+                        if round_stats:
+                            round_stats_df = pd.DataFrame(round_stats)
+                            
+                            # 회차별 추이 시각화
+                            fig = px.line(round_stats_df, x='회차', y='평균정답률',
+                                         title='회차별 평균 정답률 추이',
+                                         labels={'회차': '회차', '평균정답률': '평균 정답률 (%)'})
+                            st.plotly_chart(fig)
+                        else:
+                            st.info("아직 회차별 통계 데이터가 없습니다.")
+                    else:
+                        st.info("아직 답안이나 정답 데이터가 없습니다.")
+                else:
+                    st.info("아직 답안 데이터가 없습니다.")
             
             with tab4:
                 # 학생 정답 확인
@@ -388,6 +411,55 @@ try:
         else:
             st.header("학생용 자가채점")
             
+            # 탐구 과목 선택
+            st.subheader("탐구 과목 선택")
+            exam_round = st.selectbox("모의고사 회차를 선택하세요", ["1차", "2차", "3차", "4차"], key='subject_round')
+            
+            # 기존 선택 과목 불러오기
+            subjects_df = pd.read_csv(STUDENT_SUBJECTS_FILE)
+            selected_subjects = subjects_df[
+                (subjects_df['학생ID'] == username) & 
+                (subjects_df['회차'] == exam_round)
+            ]
+            
+            # 탐구 과목 목록
+            science_subjects = ["물리학", "화학", "생명과학", "지구과학"]
+            social_subjects = ["생활과 윤리", "윤리와 사상", "한국지리", "세계지리",
+                             "동아시아사", "세계사", "경제", "정치와 법", "사회문화"]
+            
+            # 기본값 설정
+            default_subject1 = selected_subjects['탐구1'].iloc[0] if not selected_subjects.empty else None
+            default_subject2 = selected_subjects['탐구2'].iloc[0] if not selected_subjects.empty else None
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                subject1 = st.selectbox("탐구1 과목을 선택하세요", 
+                                      science_subjects + social_subjects,
+                                      index=(science_subjects + social_subjects).index(default_subject1) if default_subject1 else 0)
+            with col2:
+                remaining_subjects = [s for s in science_subjects + social_subjects if s != subject1]
+                subject2 = st.selectbox("탐구2 과목을 선택하세요", 
+                                      remaining_subjects,
+                                      index=remaining_subjects.index(default_subject2) if default_subject2 in remaining_subjects else 0)
+            
+            if st.button("탐구 과목 저장"):
+                # 기존 선택 삭제
+                subjects_df = subjects_df[
+                    ~((subjects_df['학생ID'] == username) & 
+                      (subjects_df['회차'] == exam_round))
+                ]
+                
+                # 새로운 선택 추가
+                new_row = {
+                    '학생ID': username,
+                    '회차': exam_round,
+                    '탐구1': subject1,
+                    '탐구2': subject2
+                }
+                subjects_df = pd.concat([subjects_df, pd.DataFrame([new_row])], ignore_index=True)
+                subjects_df.to_csv(STUDENT_SUBJECTS_FILE, index=False)
+                st.success("탐구 과목이 저장되었습니다!")
+            
             # 탭 생성
             tab1, tab2 = st.tabs(["답안 입력", "정답 입력"])
             
@@ -398,7 +470,10 @@ try:
                 exam_round = st.selectbox("모의고사 회차를 선택하세요", ["1차", "2차", "3차", "4차"], key='student_round')
                 subject = st.selectbox(
                     "과목을 선택하세요",
-                    ["국어", "수학", "영어", "한국사", "탐구1", "탐구2"],
+                    ["국어", "수학", "영어", "한국사", 
+                     "물리학", "화학", "생명과학", "지구과학", 
+                     "생활과 윤리", "윤리와 사상", "한국지리", "세계지리",
+                     "동아시아사", "세계사", "경제", "정치와 법", "사회문화"],
                     key='student_subject'
                 )
                 
@@ -471,7 +546,10 @@ try:
                 exam_round = st.selectbox("모의고사 회차를 선택하세요", ["1차", "2차", "3차", "4차"], key='student_answer_round')
                 subject = st.selectbox(
                     "과목을 선택하세요",
-                    ["국어", "수학", "영어", "한국사", "탐구1", "탐구2"],
+                    ["국어", "수학", "영어", "한국사", 
+                     "물리학", "화학", "생명과학", "지구과학", 
+                     "생활과 윤리", "윤리와 사상", "한국지리", "세계지리",
+                     "동아시아사", "세계사", "경제", "정치와 법", "사회문화"],
                     key='student_answer_subject'
                 )
                 
