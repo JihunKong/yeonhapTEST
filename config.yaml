@@ -10,75 +10,75 @@ credentials:
       password: teacher123
     student1:
       email: student1@example.com
-      name: 학생1
+      name: 김서윤
       password: student123
     student2:
       email: student2@example.com
-      name: 학생2
+      name: 김수민
       password: student123
     student3:
       email: student3@example.com
-      name: 학생3
+      name: 김승민
       password: student123
     student4:
       email: student4@example.com
-      name: 학생4
+      name: 문예진
       password: student123
     student5:
       email: student5@example.com
-      name: 학생5
+      name: 박준현
       password: student123
     student6:
       email: student6@example.com
-      name: 학생6
+      name: 오시원
       password: student123
     student7:
       email: student7@example.com
-      name: 학생7
+      name: 이공명
       password: student123
     student8:
       email: student8@example.com
-      name: 학생8
+      name: 이시원
       password: student123
     student9:
       email: student9@example.com
-      name: 학생9
+      name: 이지후
       password: student123
     student10:
       email: student10@example.com
-      name: 학생10
+      name: 장혜찬
       password: student123
     student11:
       email: student11@example.com
-      name: 학생11
+      name: 정나경
       password: student123
     student12:
       email: student12@example.com
-      name: 학생12
+      name: 조다민
       password: student123
     student13:
       email: student13@example.com
-      name: 학생13
+      name: 차지윤
       password: student123
     student14:
       email: student14@example.com
-      name: 학생14
+      name: 최성진
       password: student123
     student15:
       email: student15@example.com
-      name: 학생15
+      name: 추가영
       password: student123
     student16:
       email: student16@example.com
-      name: 학생16
+      name: 추연서
       password: student123
     student17:
       email: student17@example.com
-      name: 학생17
+      name: 허나경
       password: student123
     student18:
       email: student18@example.com
-      name: 학생18
+      name: 허지연
       password: student123
 
 cookie:
