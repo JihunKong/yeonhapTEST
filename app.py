@@ -24,13 +24,13 @@ authenticator = stauth.Authenticate(
 )
 
 # 인증
-name, authentication_status, username = authenticator.login('로그인', 'main')
+authenticator.login()
 
-if authentication_status == False:
+if st.session_state["authentication_status"]:
+    name = st.session_state["name"]
+    username = st.session_state["username"]
+else:
     st.error('아이디/비밀번호가 잘못되었습니다.')
-    st.stop()
-elif authentication_status == None:
-    st.warning('아이디와 비밀번호를 입력해주세요.')
     st.stop()
 
 # 페이지 설정
