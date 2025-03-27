@@ -209,8 +209,30 @@ try:
                     "정치와 법": 20,
                     "사회문화": 20
                 }
+
+                # 과목별 만점 설정
+                subject_max_scores = {
+                    "국어": 100,
+                    "수학": 100,
+                    "영어": 100,
+                    "한국사": 50,
+                    "물리학": 50,
+                    "화학": 50,
+                    "생명과학": 50,
+                    "지구과학": 50,
+                    "생활과 윤리": 50,
+                    "윤리와 사상": 50,
+                    "한국지리": 50,
+                    "세계지리": 50,
+                    "동아시아사": 50,
+                    "세계사": 50,
+                    "경제": 50,
+                    "정치와 법": 50,
+                    "사회문화": 50
+                }
                 
                 num_questions = subject_questions[subject]
+                max_score = subject_max_scores[subject]
                 
                 # 기존 정답 불러오기
                 answers_df = pd.read_csv(ANSWERS_FILE)
@@ -266,8 +288,8 @@ try:
                     if submitted:
                         # 배점 총합 계산
                         total_points = sum(points.values())
-                        if abs(total_points - 100) > 0.1:  # 부동소수점 오차 고려
-                            st.error(f"배점의 총합이 100점이 되어야 합니다. (현재: {total_points:.1f}점)")
+                        if abs(total_points - max_score) > 0.1:  # 부동소수점 오차 고려
+                            st.error(f"배점의 총합이 {max_score}점이 되어야 합니다. (현재: {total_points:.1f}점)")
                             st.stop()
                         
                         # 기존 정답 삭제
