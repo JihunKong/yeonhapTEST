@@ -593,8 +593,30 @@ try:
                     "정치와 법": 20,
                     "사회문화": 20
                 }
+
+                # 과목별 만점 설정
+                subject_max_scores = {
+                    "국어": 100,
+                    "수학": 100,
+                    "영어": 100,
+                    "한국사": 50,
+                    "물리학": 50,
+                    "화학": 50,
+                    "생명과학": 50,
+                    "지구과학": 50,
+                    "생활과 윤리": 50,
+                    "윤리와 사상": 50,
+                    "한국지리": 50,
+                    "세계지리": 50,
+                    "동아시아사": 50,
+                    "세계사": 50,
+                    "경제": 50,
+                    "정치와 법": 50,
+                    "사회문화": 50
+                }
                 
                 num_questions = subject_questions[subject]
+                max_score = subject_max_scores[subject]
                 
                 # 답안 입력 폼
                 with st.form("student_answer_form"):
@@ -703,7 +725,7 @@ try:
                                                 except (ValueError, TypeError):
                                                     continue
                                         
-                                        st.metric("총점", f"{total_score:.1f}점")
+                                        st.metric("총점", f"{total_score:.1f}/{max_score}점")
                                 else:
                                     st.warning("답안을 입력해주세요.")
                             else:
