@@ -243,12 +243,11 @@ try:
                 
                 # 기본 배점 설정
                 default_point = st.number_input(
-                    "기본 배점을 입력하세요 (소수점 첫째자리까지)",
-                    min_value=0.0,
-                    max_value=5.0,
-                    value=2.0,
-                    step=0.1,
-                    format="%.1f"
+                    "기본 배점을 입력하세요",
+                    min_value=0,
+                    max_value=5,
+                    value=2,
+                    step=1
                 )
                 
                 # 정답 입력 폼
@@ -273,14 +272,13 @@ try:
                             if not existing_answers.empty:
                                 point_row = existing_answers[existing_answers['문항번호'] == i]
                                 if not point_row.empty:
-                                    existing_point = point_row['배점'].iloc[0]
+                                    existing_point = int(point_row['배점'].iloc[0])  # 정수로 변환
                             points[i] = st.number_input(
                                 f"{i}번 배점",
-                                min_value=0.0,
-                                max_value=5.0,
-                                value=float(existing_point),
-                                step=0.1,
-                                format="%.1f"
+                                min_value=0,
+                                max_value=5,
+                                value=int(existing_point),
+                                step=1
                             )
                     
                     submitted = st.form_submit_button("정답 저장")
